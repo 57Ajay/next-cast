@@ -8,6 +8,7 @@ const Home = () => {
           Trending Podcast
         </h1>
         <Button className="text-white-1 bg-orange-1">Button</Button>
+        
       </section>
     </div>
   );

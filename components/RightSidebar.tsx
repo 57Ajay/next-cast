@@ -1,7 +1,10 @@
 
 const RightSidebar = () => {
   return (
-    <p className="text-white-1">Right Sidebar</p>
+    <section className="right_sidebar text-white-1">
+      RightSidebar
+    </section>
+    
   );
 };
 
