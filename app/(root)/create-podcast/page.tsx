@@ -26,12 +26,21 @@ import {
 import { cn } from "@/lib/utils"
 import { useState } from "react"
 import { Textarea } from "@/components/ui/textarea"
+import GeneratePodcast from "@/components/GeneratePodcast"
+import GenerateThumbnail from "@/components/GenerateThumbnail"
+import { Button } from "@/components/ui/button"
+import { Loader } from "lucide-react"
+import { Id } from "@/convex/_generated/dataModel"
+import { useFormState } from "react-dom"
 
 
 
 const formSchema = z.object({
-  username: z.string().min(2, {
-    message: "Username must be at least 2 characters.",
+  PodcastTitle: z.string().min(2, {
+    message: "PodcastTitle must be at least 2 characters.",
+  }),
+  PodcastDescription: z.string().min(5, {
+    message: "PodcastDescription must be at least 2 characters.",
   }),
 })
 
@@ -41,13 +50,27 @@ const voiceCategories = ['alloy', 'shimmer', 'nova', 'echo',
 
 const CreatePodcast = ()=> {
 
-  const [voiceType, setVoiceType] = useState<string | null>(null)
+  const [imagePrompt, setImagePrompt] = useState('');
+  const [imageStorageId, setImageStorageId] = useState<Id<"_storage"> | null>(null);
+  const [imageUrl, setImageUrl] = useState("")
 
-   // 1. Define your form.
+  const [audioUrl, setAudioUrl] = useState("");
+  const [audioStorageId, setAudioStorageId] = useState<Id<"_storage"> | null>(null);
+  const [audioDuration, setAudioDuration] = useState(0);
+
+  const [voicePrompt, setVoicePrompt] = useState("");
+  const [voiceType, setVoiceType] = useState<string | null>(null);
+
+
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+
+
+
    const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      username: "",
+      PodcastTitle: "",
+      PodcastDescription: ""
     },
   })
  
@@ -60,7 +83,7 @@ const CreatePodcast = ()=> {
 
   return (
     <section className="mt-10 flex flex-col">
-      <h1 className="text-20 font-bold text-white-1">Create Podcast</h1>
+      <h1 className="text-20 font-bold text-white-1 text-center">Create Podcast</h1>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="mt-12 flex w-full flex-col">
           <div className="flex flex-col gap-[30px] border-b border-black-5 pb-10">
@@ -69,7 +92,7 @@ const CreatePodcast = ()=> {
             name="PodcastTitle"
             render={({ field }) => (
               <FormItem className='flex flex-col gap-2.5'>
-                <FormLabel className='text-16 font-bold text-white-1'>Username</FormLabel>
+                <FormLabel className='text-16 font-bold text-white-1'>Title</FormLabel>
                 <FormControl>
                   <Input className="input-class focus-visible:ring-orange-1" placeholder="NeXtCast" {...field} />
                 </FormControl>
@@ -86,9 +109,9 @@ const CreatePodcast = ()=> {
                 <SelectTrigger className={cn('text-16 w-full border-none bg-black-1 text-gray-1')}>
                   <SelectValue placeholder="Select AI Voice" className='placeholder:text-gray-1' />
                 </SelectTrigger>
-                <SelectContent className="text-16 border-none bg-1 font-bold text-white-1 focus:ring-orange-1">
+                <SelectContent className="text-16 border-none bg-1 font-bold text-white-1 focus:ring-orange-1 bg-zinc-700 rounded-sm">
                   {voiceCategories.map((voice)=> (
-                    <SelectItem className="capitalize focus:bg-orange-1" key={voice} value={voice}>
+                    <SelectItem className="capitalize focus:bg-orange-1 cursor-pointer" key={voice} value={voice}>
                       {voice}
                     </SelectItem>
                   ))}
@@ -115,6 +138,31 @@ const CreatePodcast = ()=> {
           </div>
           <div className="flex flex-col pt-10">
 
+            <GeneratePodcast 
+            setAudioStorageId = {setAudioStorageId}
+            setAudio = {setAudioUrl}
+            voiceType = {voiceType}
+            setVoicePrompt = {setVoicePrompt}
+            setAudioDuration = {setAudioDuration}
+
+            />
+            <GenerateThumbnail />
+
+
+            <div className="mt-10 w-fill" >
+              <Button type="submit" className="text-16 w-full bg-orange-1 py-4 font-extrabold text-white-1 transition-all duration-500 hover:bg-black-1">
+                
+                {isSubmitting ? (
+                  
+                <>
+                  Submitting
+                  <Loader size={20} className="animate-spin ml-5"/>
+                </>
+              ): (
+                "Submit & Publish Podcast"
+              )}
+              </Button>
+            </div>
           </div>
         </form>
       </Form>
