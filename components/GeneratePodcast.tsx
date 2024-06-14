@@ -1,16 +1,46 @@
 
-import { GeneratePodcastProps } from "@/types"
-import { Textarea } from "./ui/textarea"
-import { Label } from "./ui/label"
-import { Button } from "@/components/ui/button"
-import { Loader } from "lucide-react"
-import { useState } from "react"
+import { GeneratePodcastProps } from "@/types";
+import { Textarea } from "./ui/textarea";
+import { Label } from "./ui/label";
+import { Button } from "@/components/ui/button";
+import { Loader } from "lucide-react";
+import { useState } from "react";
+import { useAction, useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { v4 as uuidv4 } from "uuid";
+import { generateUploadUrl } from "@/convex/files";
+import { useUploadFiles } from '@xixixao/uploadstuff/react'
 
 
-const useGeneratePodcast = (props: GeneratePodcastProps)=>{
-    const [isGenerating, setIsGenerating] = useState(false)
+
+const useGeneratePodcast = ({setAudio, voiceType, voicePrompt, setAudioStorageId }: GeneratePodcastProps)=>{
+    const [isGenerating, setIsGenerating] = useState(false);
+    const generateUploadUrl: any = useMutation(api.files.generateUploadUrl)
+    const { startUpload } = useUploadFiles(generateUploadUrl)
+
+    const getPodcastAudio = useAction(api.openai.generateAudioAction)
+
     const generatePodcast = async()=>{
-        
+        setIsGenerating(true);
+        setAudio("");
+        if(!voicePrompt){
+            return setIsGenerating(false);
+        }
+        try {
+            const response = await getPodcastAudio({
+                voice: voiceType,
+                input: voicePrompt
+            });
+            const blob = new Blob ([response], {type: 'audio/mpeg'});
+
+            const fileName = `podcast-${uuidv4()}.mp3`
+            const file = new File([blob], fileName, {type: 'audio/mpeg'})
+            const uploaded: any = startUpload([file]);
+            const storageId = uploaded[0].storageId;
+        } catch (error) {
+            console.error('Error Generating Podcast', error)
+            setIsGenerating(false);
+        }
     }
     return{
         isGenerating, generatePodcast
