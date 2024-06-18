@@ -102,6 +102,8 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 - [Tailwind CSS](https://tailwindcss.com/)
 - [TypeScript](https://www.typescriptlang.org/)
 
+[Convex](https://www.convex.dev/)
+
 ---
 
 Made with ❤️ by [Ajay Upadhyay](https://github.com/57ajay)
